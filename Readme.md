@@ -1,7 +1,8 @@
-# MFS
+# MFS(Mobile Financial Service )
 
 ## Introduction
-MFS is a comprehensive platform designed to help people find and adopt pets in need. Our mission is to connect potential pet owners with pets that are looking for a loving home, and to support the well-being of all animals through community engagement and donation campaigns. Whether you're looking to adopt a cat, dog, rabbit, fish, or any other pet, our website provides a seamless and enjoyable experience.
+ MFS application (like bKash or Nagad) using React.js, Node.js, Express.js, and MongoDB. Implement essential features: user authentication, send money, cash-out, and balance inquiries. Ensure a simple and secure web interface.
+
 
 ## Frontend Live Link
 [MFS Frontend](https://pet-adoption-eccce.web.app)
