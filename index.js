@@ -95,16 +95,16 @@ async function run() {
       }
     });
 
-     // Get all users
-     app.get('/all-user', verifyToken, verifyRole('admin'), async (req, res) => {
+    // Get all users
+    app.get('/all-user', verifyToken, verifyRole('admin'), async (req, res) => {
       try {
         const users = await userCollection.find().sort({ timestamp: -1 }).toArray();
 
-         
+
         const enrichedRequests = await Promise.all(users.map(async (user) => {
           return {
             ...user,
-            
+
           };
         }));
 
@@ -255,9 +255,18 @@ async function run() {
     // Delete user
     app.delete('/users/:id', verifyToken, verifyRole('admin'), async (req, res) => {
       const id = req.params.id;
-      const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
-      res.send(result);
+      try {
+        const result = await userCollection.deleteOne({ _id: new ObjectId(id) });
+        if (result.deletedCount === 1) {
+          res.status(200).json({ message: 'User deleted successfully' });
+        } else {
+          res.status(404).json({ message: 'User not found' });
+        }
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
     });
+
 
 
 
@@ -336,14 +345,14 @@ async function run() {
     // POST of cashout 
     app.post('/cashout-request', verifyToken, async (req, res) => {
       const { agentMobile, amount } = req.body;
-    
+
       if (amount < 50) return res.status(400).json({ message: 'Minimum transaction amount is 50 Taka' });
-    
+
       try {
         const user = await userCollection.findOne({ _id: new ObjectId(req.decoded.userId) });
         const agent = await userCollection.findOne({ mobileNumber: agentMobile });
         if (!agent) return res.status(400).json({ message: 'Agent not found' });
-    
+
         // Record cash-in request
         const cashOutRequest = {
           userId: user._id,
@@ -355,7 +364,7 @@ async function run() {
           timestamp: new Date()
         };
         await cashOutRequestCollection.insertOne(cashOutRequest);
-    
+
         res.json({ message: 'Cash-in request sent successfully' });
       } catch (error) {
         res.status(500).json({ message: error.message });
@@ -406,9 +415,9 @@ async function run() {
         // agent.balance = request.amount + fee;
 
         // Update balances
-      const totalDeduction = request.amount + fee;
-    user.balance -= totalDeduction;
-    agent.balance += request.amount + fee;  
+        const totalDeduction = request.amount + fee;
+        user.balance -= totalDeduction;
+        agent.balance += request.amount + fee;
 
         // Update balances
         await userCollection.updateOne({ _id: user._id }, { $set: { balance: user.balance } });
@@ -436,14 +445,14 @@ async function run() {
     // Endpoint to post user's cash-in requests
     app.post('/cashin-request', verifyToken, async (req, res) => {
       const { agentMobile, amount } = req.body;
-    
+
       if (amount < 50) return res.status(400).json({ message: 'Minimum transaction amount is 50 Taka' });
-    
+
       try {
         const user = await userCollection.findOne({ _id: new ObjectId(req.decoded.userId) });
         const agent = await userCollection.findOne({ mobileNumber: agentMobile });
         if (!agent) return res.status(400).json({ message: 'Agent not found' });
-    
+
         // Record cash-in request
         const cashInRequest = {
           userId: user._id,
@@ -455,7 +464,7 @@ async function run() {
           timestamp: new Date()
         };
         await cashInRequestCollection.insertOne(cashInRequest);
-    
+
         res.json({ message: 'Cash-in request sent successfully' });
       } catch (error) {
         res.status(500).json({ message: error.message });
@@ -489,7 +498,7 @@ async function run() {
         res.status(500).json({ message: error.message });
       }
     });
-// approve cash in 
+    // approve cash in 
     app.post('/cashin/approve', verifyToken, verifyRole('agent'), async (req, res) => {
       const { requestId } = req.body;
 
